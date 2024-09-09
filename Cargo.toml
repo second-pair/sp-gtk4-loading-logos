@@ -5,4 +5,15 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+#  C crossover.
+[lib]
+name = "sp_gtk4_loading_logos"
+crate-type = ["staticlib"]
+
+[profile .release-with-debug]
+inherits = "release"
+debug = true
+
+
 [dependencies]
+libc = "0.2.158"

@@ -1,4 +1,6 @@
-pub fn add(left: usize, right: usize) -> usize {
+# [no_mangle]
+pub unsafe extern "C" fn rs_add (left: usize, right: usize) -> usize
+{
     left + right
 }
 
