@@ -52,6 +52,7 @@
 //use std ::io ::{Write, BufWriter};
 //use std ::rc ::Rc;
 //use std ::cell ::RefCell;
+use std ::f64 ::consts ::PI;
 //  of Which are GTK4
 use gtk4 as gtk;
 use gtk ::prelude ::*;
@@ -67,6 +68,8 @@ use loading_logos ::LoadingLogo;
 
 //  Global Constants
 const TIME_ANIM: u16 = 50;
+const DRAW_TARGET_LEN: f64 = 1000.0;
+const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
 
 //  Global Variables
 
@@ -102,14 +105,18 @@ impl Logo1
 		let da_logo: Logo1 = Object ::builder () .build ();
 		da_logo .set_hexpand (true);
 		da_logo .set_vexpand (true);
-		da_logo .set_draw_func (priv_logo_render);
+
+		//  Configure the redraw.
+		da_logo .setup_render ();
+
+		da_logo .iter = 14.7;
 
 		//  Add a timeout to update the logo's positions.
 		//  Local, so we don't mess with GTK's main-thread requirements.
 		gtk ::glib ::timeout_add_local
 		(
 			//core ::time ::Duration ::from_millis (TIME_ANIM as u64),
-			core ::time ::Duration ::from_millis (1000 as u64),
+			core ::time ::Duration ::from_millis (TIME_ANIM as u64),
 			clone! (#[strong] da_logo, move ||
 			{
 				da_logo .queue_draw ();
@@ -118,6 +125,40 @@ impl Logo1
 		));
 
 		return da_logo;
+	}
+
+	fn setup_render (&self)
+	{
+		self .set_draw_func (clone!(@weak self as widget => move |_, cairo, width, height|
+		{
+			//  'static' iteration counter.
+			//#  Handle overflow.
+			//static ITER: AtomicUsize = AtomicUsize ::new (0);
+			//let iter = ITER .fetch_add (1, Ordering ::Relaxed) as f64;
+			let iter: f64 = 0.0;
+
+			//  Draw a box outline to help suss out the widget's area.
+			cairo .rectangle (0.0, 0.0, width as f64, height as f64);
+
+			//  Scale factor - calculated from 'width' and 'height'.
+			let areaScale = core ::cmp ::min (width, height) as f64 / DRAW_TARGET_LEN;
+
+			//  Move the origin to the middle and flip the Y-axis.
+			let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, width as f64 / 2.0, height as f64 / 2.0);
+			cairo .transform (matrix);
+
+			//  Perform the draw.
+			//self .draw (cairo, iter, areaScale);
+			let anim_type = LoadingLogo ::OrbitNBalls;
+			anim_type .draw (cairo, iter, areaScale);
+
+			//  Render that line.
+			cairo .set_line_width (DRAW_LINE_WIDTH_BASE * areaScale);
+			cairo .set_line_cap (gtk ::cairo ::LineCap ::Round);
+			cairo .set_line_join (gtk ::cairo ::LineJoin ::Round);
+			cairo .set_source_rgba (1.0, 1.0, 1.0, 1.0);
+			cairo .stroke () .unwrap ();
+		}));
 	}
 }
 
@@ -136,46 +177,11 @@ pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
 	return Logo1 ::create () .into ();
 }
 
-fn priv_create () -> gtk ::Widget
-{
-	//  Create the DrawingArea.
-	let cairo_logo = gtk ::DrawingArea ::builder ()
-		.hexpand (true)
-		.vexpand (true)
-		.build ();
-
-	cairo_logo .set_draw_func (priv_logo_render);
-
-	//  Create the animation enum.
-	let anim_type: LoadingLogo = LoadingLogo ::OrbitNBalls;
-	//g_object_set_data (&mut cairo_logo, "anim_type", anim_type .into ());
-
-	//  Add a timeout to update the logo's positions.
-	//  Local, so we don't mess with GTK's main-thread requirements.
-	gtk ::glib ::timeout_add_local
-	(
-		core ::time ::Duration ::from_millis (TIME_ANIM as u64),
-		clone! (#[strong] cairo_logo, move ||
-		{
-			cairo_logo .queue_draw ();
-			return ControlFlow ::Continue;
-		}
-	));
-
-	return cairo_logo .into ();
-}
-
 //  *--</Main Code>--*  //
 
 
 
 //  *--<Callbacks>--*  //
-
-fn priv_logo_render (area: &gtk ::DrawingArea, cairo: &gtk ::cairo ::Context, width: i32, height: i32)
-{
-	let anim_type: LoadingLogo = LoadingLogo ::OrbitNBalls;
-	anim_type .render (area, cairo, width, height);
-}
 
 //  *--</Callbacks>--*  //
 
