@@ -60,7 +60,7 @@ use gtk ::glib;
 use gtk ::glib ::ControlFlow;
 use gtk ::glib ::clone;
 //  of Which are Local
-mod loading_logos;
+mod logo_types;
 
 //  Global Enumerations
 
@@ -89,16 +89,16 @@ const TIME_ANIM: u16 = 50;
 
 glib ::wrapper!
 {
-	pub struct Logo1 (ObjectSubclass <loading_logos_impl ::Logo1>)
+	pub struct LoadingLogo (ObjectSubclass <loading_logos_impl ::LoadingLogo>)
 	@extends gtk ::DrawingArea, gtk ::Widget,
 	@implements gtk ::Accessible, gtk ::Actionable, gtk ::Buildable, gtk::ConstraintTarget;
 }
 
-impl Logo1
+impl LoadingLogo
 {
 	pub fn create () -> Self
 	{
-		let da_logo: Logo1 = Object ::builder () .build ();
+		let da_logo: LoadingLogo = Object ::builder () .build ();
 		da_logo .set_hexpand (true);
 		da_logo .set_vexpand (true);
 
@@ -139,7 +139,7 @@ pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
 	gtk ::init () .unwrap ();
 
 	//return priv_create ();
-	return Logo1 ::create () .into ();
+	return LoadingLogo ::create () .into ();
 }
 
 //  *--</Main Code>--*  //
@@ -153,38 +153,38 @@ pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
 
 mod loading_logos_impl
 {
-	use std ::f64 ::consts ::PI;
 	use gtk4 as gtk;
 	use gtk ::prelude ::*;
 	use gtk ::glib;
 	use gtk ::glib ::clone;
 	use gtk ::subclass ::prelude ::*;
 
-	use crate ::loading_logos ::LoadingLogo;
+	use crate ::logo_types ::LogoType;
 
 	const DRAW_TARGET_LEN: f64 = 1000.0;
 	const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
 
 	# [derive (Default)]
-	pub struct Logo1
+	pub struct LoadingLogo
 	{
-		//anim_type: LoadingLogo,
+		anim_type: std ::cell ::Cell <LogoType>,
 		iter: std ::cell ::Cell <f64>,
 	}
 
 	# [glib ::object_subclass]
-	impl ObjectSubclass for Logo1
+	impl ObjectSubclass for LoadingLogo
 	{
-		const NAME:  &'static str = "Logo1";
-		type Type = super ::Logo1;
+		const NAME:  &'static str = "LoadingLogo";
+		type Type = super ::LoadingLogo;
 		type ParentType = gtk ::DrawingArea;
 	}
 	//  Trait shared by all GObjects
-	impl ObjectImpl for Logo1
+	impl ObjectImpl for LoadingLogo
 	{
 		fn constructed (&self)
 		{
 			self .parent_constructed ();
+			# [allow (deprecated)]
 			DrawingAreaExtManual ::set_draw_func (self .obj () .as_ref (),
 				clone!(@weak self as widget => move |_, cairo, width, height|
 			{
@@ -199,8 +199,7 @@ mod loading_logos_impl
 				cairo .transform (matrix);
 
 				//  Perform the draw.
-				//self .draw (cairo, iter, areaScale);
-				let anim_type = LoadingLogo ::OrbitNBalls;
+				let anim_type = widget .anim_type .get ();
 				anim_type .draw (cairo, widget .iter .get (), areaScale);
 				//  Iterate the iterator.
 				widget .iter .set (widget .iter .get () + 1.0);
@@ -215,7 +214,7 @@ mod loading_logos_impl
 		}
 	}
 	//  Trait shared by all widgets
-	impl WidgetImpl for Logo1 {}
+	impl WidgetImpl for LoadingLogo {}
 	//  Trait shared by all drawing areas
-	impl DrawingAreaImpl for Logo1 {}
+	impl DrawingAreaImpl for LoadingLogo {}
 }

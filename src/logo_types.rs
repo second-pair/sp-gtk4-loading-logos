@@ -36,7 +36,6 @@
 //use std ::path ::Path;
 //use std ::io ::{Read, BufReader, BufRead};
 //use std ::io ::{Write, BufWriter};
-use std ::sync ::atomic ::{AtomicUsize, Ordering};
 use std ::f64 ::consts ::PI;
 //  of Which are GTK4
 use gtk4 as gtk;
@@ -62,11 +61,13 @@ use gtk4 as gtk;
 */
 # [allow (non_camel_case_types)]
 # [allow (dead_code)]
-pub enum LoadingLogo
+# [derive (Default, Clone, Copy)]
+pub enum LogoType
 {
 	PulseFillCircle,
 	CircFillCircleCcw,
 	CircFillCircleCw,
+	# [default]
 	OrbitNBalls,
 	CircFillCircle_OrbitNBalls,
 	NStartCircArcs,
@@ -79,8 +80,6 @@ pub enum LoadingLogo
 }
 
 //  Global Constants
-const DRAW_TARGET_LEN: f64 = 1000.0;
-const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
 
 //  Global Variables
 
@@ -145,7 +144,7 @@ impl std ::fmt ::Debug for Error
 
 //  *--<Traits & Implementations>--*  //
 
-impl LoadingLogo
+impl LogoType
 {
 	//  Cairo Render function.
 	//Work out how to break these down into smaller fucntions or something.  Does Rust have private impl functions?
@@ -154,18 +153,18 @@ impl LoadingLogo
 		match (self)
 		{
 			//#  Parameterise more of these.
-			LoadingLogo ::PulseFillCircle => self .draw_PulseFillCircle (cairo, iter, areaScale),
-			LoadingLogo ::CircFillCircleCcw => self .draw_CircFillCircleCcw (cairo, iter, areaScale),
-			LoadingLogo ::CircFillCircleCw => self .draw_CircFillCircleCw (cairo, iter, areaScale),
-			LoadingLogo ::OrbitNBalls => self .draw_OrbitNBalls (cairo, iter, areaScale),
-			LoadingLogo ::CircFillCircle_OrbitNBalls => self .draw_CircFillCircle_OrbitNBalls (cairo, iter, areaScale),
-			LoadingLogo ::NStartCircArcs => self .draw_NStartCircArcs (cairo, iter, areaScale),
-			LoadingLogo ::ConcentricCircArcsV1 => self .draw_ConcentricCircArcsV1 (cairo, iter, areaScale),
-			LoadingLogo ::ConcentricCircArcsV2 => self .draw_ConcentricCircArcsV2 (cairo, iter, areaScale),
-			LoadingLogo ::ConcentricCircArcsV3 => self .draw_ConcentricCircArcsV3 (cairo, iter, areaScale),
-			LoadingLogo ::OrbitNBalls_RadLines => self .draw_OrbitNBalls_RadLines (cairo, iter, areaScale),
-			LoadingLogo ::OrbitNBalls_PulseRadLines => self .draw_OrbitNBalls_PulseRadLines (cairo, iter, areaScale),
-			LoadingLogo ::Pong => todo! (),
+			LogoType ::PulseFillCircle => self .draw_PulseFillCircle (cairo, iter, areaScale),
+			LogoType ::CircFillCircleCcw => self .draw_CircFillCircleCcw (cairo, iter, areaScale),
+			LogoType ::CircFillCircleCw => self .draw_CircFillCircleCw (cairo, iter, areaScale),
+			LogoType ::OrbitNBalls => self .draw_OrbitNBalls (cairo, iter, areaScale),
+			LogoType ::CircFillCircle_OrbitNBalls => self .draw_CircFillCircle_OrbitNBalls (cairo, iter, areaScale),
+			LogoType ::NStartCircArcs => self .draw_NStartCircArcs (cairo, iter, areaScale),
+			LogoType ::ConcentricCircArcsV1 => self .draw_ConcentricCircArcsV1 (cairo, iter, areaScale),
+			LogoType ::ConcentricCircArcsV2 => self .draw_ConcentricCircArcsV2 (cairo, iter, areaScale),
+			LogoType ::ConcentricCircArcsV3 => self .draw_ConcentricCircArcsV3 (cairo, iter, areaScale),
+			LogoType ::OrbitNBalls_RadLines => self .draw_OrbitNBalls_RadLines (cairo, iter, areaScale),
+			LogoType ::OrbitNBalls_PulseRadLines => self .draw_OrbitNBalls_PulseRadLines (cairo, iter, areaScale),
+			LogoType ::Pong => todo! (),
 		}
 	}
 
