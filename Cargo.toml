@@ -13,6 +13,8 @@ crate-type = ["staticlib"]
 [profile .release-with-debug]
 inherits = "release"
 debug = true
+lto = "fat"
+codegen-units = 1
 
 
 [dependencies]

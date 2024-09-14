@@ -25,8 +25,8 @@
 #! [allow (unused_variables)]
 #! [allow (non_snake_case)]
 #! [allow (unused_parens)]
-#! [allow (dead_code)]
-#! [allow (unused_imports)]
+//#! [allow (dead_code)]
+//#! [allow (unused_imports)]
 
 //  Imports
 //use std ::io ::{stdin, stdout};
@@ -60,6 +60,7 @@ use gtk4 as gtk;
 11.  Orbiting N-Ary balls, with radius-following pulsers.
 */
 # [allow (non_camel_case_types)]
+# [allow (dead_code)]
 pub enum LoadingLogo
 {
 	PulseFillCircle,

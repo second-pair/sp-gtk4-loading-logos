@@ -39,8 +39,8 @@
 #! [allow (unused_variables)]
 #! [allow (non_snake_case)]
 #! [allow (unused_parens)]
-#! [allow (dead_code)]
-#! [allow (unused_imports)]
+//#! [allow (dead_code)]
+//#! [allow (unused_imports)]
 
 //  Imports
 //use std ::io ::{stdin, stdout};
@@ -50,14 +50,14 @@
 //use std ::path ::Path;
 //use std ::io ::{Read, BufReader, BufRead};
 //use std ::io ::{Write, BufWriter};
-use std ::f64 ::consts ::PI;
 use std ::sync ::atomic ::{AtomicUsize, Ordering};
 //use std ::rc ::Rc;
 //use std ::cell ::RefCell;
 //  of Which are GTK4
 use gtk4 as gtk;
 use gtk ::prelude ::*;
-use gtk ::glib;
+//use gtk ::glib;
+use gtk4 ::glib ::ControlFlow;
 use gtk ::glib ::clone;
 //  of Which are Local
 mod loading_logos;
@@ -115,10 +115,10 @@ fn priv_create () -> gtk ::Widget
 	gtk ::glib ::timeout_add_local
 	(
 		core ::time ::Duration ::from_millis (TIME_ANIM as u64),
-		clone! (@strong cairo_loading => move ||
+		clone! (#[strong] cairo_loading, move ||
 		{
 			cairo_loading .queue_draw ();
-			return true .into ();
+			return ControlFlow ::Continue;
 		}
 	));
 	return cairo_loading .into ();
