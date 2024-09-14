@@ -29,6 +29,8 @@
 
 //  Global Prototype Functions
 GtkWidget* sp_gtk4_loading_logos_create ();
+//set type
+//get type
 
 //  *--</Definitions>--*  //
 

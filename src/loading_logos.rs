@@ -36,6 +36,7 @@
 //use std ::path ::Path;
 //use std ::io ::{Read, BufReader, BufRead};
 //use std ::io ::{Write, BufWriter};
+use std ::sync ::atomic ::{AtomicUsize, Ordering};
 use std ::f64 ::consts ::PI;
 //  of Which are GTK4
 use gtk4 as gtk;
@@ -78,6 +79,8 @@ pub enum LoadingLogo
 }
 
 //  Global Constants
+const DRAW_TARGET_LEN: f64 = 1000.0;
+const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
 
 //  Global Variables
 
@@ -144,6 +147,35 @@ impl std ::fmt ::Debug for Error
 
 impl LoadingLogo
 {
+	//  Cairo Render function.
+	pub fn render (self, area: &gtk ::DrawingArea, cairo: &gtk ::cairo ::Context, width: i32, height: i32)
+	{
+		//  'static' iteration counter.
+		//#  Handle overflow.
+		static ITER: AtomicUsize = AtomicUsize ::new (0);
+		let iter = ITER .fetch_add (1, Ordering ::Relaxed) as f64;
+
+		//  Draw a box outline to help suss out the widget's area.
+		cairo .rectangle (0.0, 0.0, width as f64, height as f64);
+
+		//  Scale factor - calculated from 'width' and 'height'.
+		let areaScale = core ::cmp ::min (width, height) as f64 / DRAW_TARGET_LEN;
+
+		//  Move the origin to the middle and flip the Y-axis.
+		let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, width as f64 / 2.0, height as f64 / 2.0);
+		cairo .transform (matrix);
+
+		//  Perform the draw.
+		self .draw (cairo, iter, areaScale);
+
+		//  Render that line.
+		cairo .set_line_width (DRAW_LINE_WIDTH_BASE * areaScale);
+		cairo .set_line_cap (gtk ::cairo ::LineCap ::Round);
+		cairo .set_line_join (gtk ::cairo ::LineJoin ::Round);
+		cairo .set_source_rgba (1.0, 1.0, 1.0, 1.0);
+		cairo .stroke () .unwrap ();
+	}
+
 	//Work out how to break these down into smaller fucntions or something.  Does Rust have private impl functions?
 	pub fn draw (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)
 	{
