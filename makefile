@@ -33,6 +33,9 @@ TAG_ARM=arm
 PFX_LINUX=x86_64-unknown-linux-gnu
 PFX_WIN=x86_64-pc-windows-gnu
 PFX_ARM=aarch64-unknown-linux-gnu
+PKGCONF_LINUX=PKG_CONFIG_SYSROOT_DIR=/usr
+PKGCONF_WIN=PKG_CONFIG_SYSROOT_DIR=/usr/x86_64-w64-mingw32
+PKGCONF_ARM=PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu
 
 
 #  High-Level Targets
@@ -60,19 +63,19 @@ PATH_ARM=$(PATH_TGT)/$(PFX_ARM)
 
 
 #  Compiling the target archive - release.
-$(PATH_LINUX)/$(PATH_REL)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:
-	$(CMD_COMP_REL) --target $(PFX_LINUX)
-$(PATH_WIN)/$(PATH_REL)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:
-	$(CMD_COMP_REL) --target $(PFX_WIN)
-$(PATH_ARM)/$(PATH_REL)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:
-	$(CMD_COMP_REL) --target $(PFX_ARM)
+$(PATH_LINUX)/$(PATH_REL)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:  src/*.rs
+	$(PKGCONF_LINUX) $(CMD_COMP_REL) --target $(PFX_LINUX)
+$(PATH_WIN)/$(PATH_REL)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:  src/*.rs
+	$(PKGCONF_WIN) $(CMD_COMP_REL) --target $(PFX_WIN)
+$(PATH_ARM)/$(PATH_REL)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:  src/*.rs
+	$(PKGCONF_ARM) $(CMD_COMP_REL) --target $(PFX_ARM)
 #  Compiling the target archive - debug.
-$(PATH_LINUX)/$(PATH_DBG)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:
-	$(CMD_COMP_DBG) --target $(PFX_LINUX)
-$(PATH_WIN)/$(PATH_DBG)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:
-	$(CMD_COMP_DBG) --target $(PFX_WIN)
-$(PATH_ARM)/$(PATH_DBG)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:
-	$(CMD_COMP_DBG) --target $(PFX_ARM)
+$(PATH_LINUX)/$(PATH_DBG)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:  src/*.rs
+	$(PKGCONF_LINUX) $(CMD_COMP_DBG) --target $(PFX_LINUX)
+$(PATH_WIN)/$(PATH_DBG)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:  src/*.rs
+	$(PKGCONF_WIN) $(CMD_COMP_DBG) --target $(PFX_WIN)
+$(PATH_ARM)/$(PATH_DBG)/$(PFX_LIB_RS)$(LIB_NAME_RS).a:  src/*.rs
+	$(PKGCONF_ARM) $(CMD_COMP_DBG) --target $(PFX_ARM)
 
 #  Copying the archive to the destination - release.
 $(PATH_DEST)/$(LIB_NAME).$(TAG_REL).$(TAG_LINUX).a:  $(PATH_LINUX)/$(PATH_REL)/$(PFX_LIB_RS)$(LIB_NAME_RS).a

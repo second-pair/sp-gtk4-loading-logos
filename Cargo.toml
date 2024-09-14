@@ -16,4 +16,5 @@ debug = true
 
 
 [dependencies]
+gtk4 = "0.9.1"
 libc = "0.2.158"

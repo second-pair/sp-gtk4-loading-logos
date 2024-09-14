@@ -28,7 +28,7 @@
 //  Truly Global Variables
 
 //  Global Prototype Functions
-size_t rs_add (size_t left, size_t right);
+GtkWidget* sp_gtk4_loading_logos_create ();
 
 //  *--</Definitions>--*  //
 
