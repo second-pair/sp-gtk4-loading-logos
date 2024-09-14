@@ -52,7 +52,6 @@
 //use std ::io ::{Write, BufWriter};
 //use std ::rc ::Rc;
 //use std ::cell ::RefCell;
-use std ::f64 ::consts ::PI;
 //  of Which are GTK4
 use gtk4 as gtk;
 use gtk ::prelude ::*;
@@ -62,14 +61,11 @@ use gtk ::glib ::ControlFlow;
 use gtk ::glib ::clone;
 //  of Which are Local
 mod loading_logos;
-use loading_logos ::LoadingLogo;
 
 //  Global Enumerations
 
 //  Global Constants
 const TIME_ANIM: u16 = 50;
-const DRAW_TARGET_LEN: f64 = 1000.0;
-const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
 
 //  Global Variables
 
@@ -109,8 +105,6 @@ impl Logo1
 		//  Configure the redraw.
 		da_logo .setup_render ();
 
-		da_logo .iter = 14.7;
-
 		//  Add a timeout to update the logo's positions.
 		//  Local, so we don't mess with GTK's main-thread requirements.
 		gtk ::glib ::timeout_add_local
@@ -129,36 +123,7 @@ impl Logo1
 
 	fn setup_render (&self)
 	{
-		self .set_draw_func (clone!(@weak self as widget => move |_, cairo, width, height|
-		{
-			//  'static' iteration counter.
-			//#  Handle overflow.
-			//static ITER: AtomicUsize = AtomicUsize ::new (0);
-			//let iter = ITER .fetch_add (1, Ordering ::Relaxed) as f64;
-			let iter: f64 = 0.0;
 
-			//  Draw a box outline to help suss out the widget's area.
-			cairo .rectangle (0.0, 0.0, width as f64, height as f64);
-
-			//  Scale factor - calculated from 'width' and 'height'.
-			let areaScale = core ::cmp ::min (width, height) as f64 / DRAW_TARGET_LEN;
-
-			//  Move the origin to the middle and flip the Y-axis.
-			let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, width as f64 / 2.0, height as f64 / 2.0);
-			cairo .transform (matrix);
-
-			//  Perform the draw.
-			//self .draw (cairo, iter, areaScale);
-			let anim_type = LoadingLogo ::OrbitNBalls;
-			anim_type .draw (cairo, iter, areaScale);
-
-			//  Render that line.
-			cairo .set_line_width (DRAW_LINE_WIDTH_BASE * areaScale);
-			cairo .set_line_cap (gtk ::cairo ::LineCap ::Round);
-			cairo .set_line_join (gtk ::cairo ::LineJoin ::Round);
-			cairo .set_source_rgba (1.0, 1.0, 1.0, 1.0);
-			cairo .stroke () .unwrap ();
-		}));
 	}
 }
 
@@ -188,15 +153,23 @@ pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
 
 mod loading_logos_impl
 {
+	use std ::f64 ::consts ::PI;
 	use gtk4 as gtk;
-	use gtk::glib;
-	use gtk::subclass::prelude::*;
+	use gtk ::prelude ::*;
+	use gtk ::glib;
+	use gtk ::glib ::clone;
+	use gtk ::subclass ::prelude ::*;
+
+	use crate ::loading_logos ::LoadingLogo;
+
+	const DRAW_TARGET_LEN: f64 = 1000.0;
+	const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
 
 	# [derive (Default)]
 	pub struct Logo1
 	{
 		//anim_type: LoadingLogo,
-		iter: f64,
+		iter: std ::cell ::Cell <f64>,
 	}
 
 	# [glib ::object_subclass]
@@ -207,7 +180,40 @@ mod loading_logos_impl
 		type ParentType = gtk ::DrawingArea;
 	}
 	//  Trait shared by all GObjects
-	impl ObjectImpl for Logo1 {}
+	impl ObjectImpl for Logo1
+	{
+		fn constructed (&self)
+		{
+			self .parent_constructed ();
+			DrawingAreaExtManual ::set_draw_func (self .obj () .as_ref (),
+				clone!(@weak self as widget => move |_, cairo, width, height|
+			{
+				//  Draw a box outline to help suss out the widget's area.
+				cairo .rectangle (0.0, 0.0, width as f64, height as f64);
+
+				//  Scale factor - calculated from 'width' and 'height'.
+				let areaScale = core ::cmp ::min (width, height) as f64 / DRAW_TARGET_LEN;
+
+				//  Move the origin to the middle and flip the Y-axis.
+				let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, width as f64 / 2.0, height as f64 / 2.0);
+				cairo .transform (matrix);
+
+				//  Perform the draw.
+				//self .draw (cairo, iter, areaScale);
+				let anim_type = LoadingLogo ::OrbitNBalls;
+				anim_type .draw (cairo, widget .iter .get (), areaScale);
+				//  Iterate the iterator.
+				widget .iter .set (widget .iter .get () + 1.0);
+
+				//  Render that line.
+				cairo .set_line_width (DRAW_LINE_WIDTH_BASE * areaScale);
+				cairo .set_line_cap (gtk ::cairo ::LineCap ::Round);
+				cairo .set_line_join (gtk ::cairo ::LineJoin ::Round);
+				cairo .set_source_rgba (1.0, 1.0, 1.0, 1.0);
+				cairo .stroke () .unwrap ();
+			}));
+		}
+	}
 	//  Trait shared by all widgets
 	impl WidgetImpl for Logo1 {}
 	//  Trait shared by all drawing areas
