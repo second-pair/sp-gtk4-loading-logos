@@ -181,6 +181,8 @@ pub extern "C" fn sp_gtk4_loading_logos_max_type () -> LtType
 
 mod logo_impl
 {
+	use std ::f64 ::consts ::PI;
+
 	use gtk4 as gtk;
 	use gtk ::prelude ::*;
 	use gtk ::glib;
@@ -193,6 +195,7 @@ mod logo_impl
 
 	const DRAW_TARGET_LEN: f64 = 0.8;
 	const DRAW_LINE_WIDTH_BASE: f64 = 0.014;
+	const DRAW_RAD_BASE: f64 = 0.2;
 
 	# [derive (Properties, Default)]
 	# [properties (wrapper_type = super ::LoadingLogo)]
@@ -225,15 +228,29 @@ mod logo_impl
 			DrawingAreaExtManual ::set_draw_func (self .obj () .as_ref (),
 				clone! (@weak self as widget => move |_, cairo, width, height|
 			{
-				//  Draw a box outline to help suss out the widget's area.
-				cairo .rectangle (0.0, 0.0, width as f64, height as f64);
-
-				//  Scale dimension (in pixels) - calculated from 'width' and 'height'.
+				//  Scale dimension (in pixels) - calculated from 'width' and 'height'.  We'll shrink this a bit further shortly.
 				let areaScale = core ::cmp ::min (width, height) as f64 * DRAW_TARGET_LEN;
+				let borderLen = core ::cmp ::min (width, height) as f64 / 2.0;
+				let borderRad = areaScale * DRAW_RAD_BASE;
 
 				//  Move the origin to the middle and flip the Y-axis.
 				let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, width as f64 / 2.0, height as f64 / 2.0);
 				cairo .transform (matrix);
+
+				//  Draw a box outline to help suss out the widget's area.
+				cairo .move_to (-borderLen, borderLen - borderRad);
+				cairo .line_to (-borderLen, -borderLen + borderRad);
+				cairo .arc (-borderLen + borderRad, -borderLen + borderRad, borderRad, PI, PI*1.5);
+				cairo .line_to (borderLen - borderRad, -borderLen);
+				cairo .arc (borderLen - borderRad, -borderLen + borderRad, borderRad, PI*1.5, 0.0);
+				cairo .line_to (borderLen, borderLen - borderRad);
+				cairo .arc (borderLen - borderRad, borderLen - borderRad, borderRad, 0.0, PI*0.5);
+				cairo .line_to (-borderLen + borderRad, borderLen);
+				cairo .arc (-borderLen + borderRad, borderLen - borderRad, borderRad, PI*0.5, PI);
+
+				cairo .set_source_rgba (0.0, 0.0, 0.0, 0.7);
+				cairo .fill () .unwrap ();
+
 
 				//  Perform the draw.
 				let anim_type = LogoType ::from_value_or_default (widget .anim_type .get ());
