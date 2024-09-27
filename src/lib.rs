@@ -99,14 +99,20 @@ glib ::wrapper!
 //  Implement the public-facing API for this structure.
 impl LoadingLogo
 {
-	pub fn create (test_number: i32) -> Self
+	pub fn create (anim_type: Option <i32>) -> Self
 	{
+		let anim_type = match (anim_type)
+		{
+			Some (val) => val,
+			None => 5,
+		};
 		let da_logo: LoadingLogo = Object ::builder ()
-			.property ("test_number", test_number)
+			.property ("anim_type", anim_type)
+			//.property ("anim_type", std ::cell ::Cell ::new (LogoType ::default))
+			//.property ("anim_type", LogoType ::default)
 			.build ();
 		da_logo .set_hexpand (true);
 		da_logo .set_vexpand (true);
-		//da_logo .test_number = 14;
 
 		//  Add a timeout to update the logo's positions.
 		//  Local, so we don't mess with GTK's main-thread requirements.
@@ -123,12 +129,6 @@ impl LoadingLogo
 
 		return da_logo;
 	}
-
-	pub fn retrieve_number (&self) -> i32
-	{
-		//return self .test_number ();
-		return 7;
-	}
 }
 
 //  *--</Traits & Implementations>--*  //
@@ -143,10 +143,7 @@ pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
 {
 	gtk ::init () .unwrap ();
 
-	//return priv_create ();
-	let newLogo = LoadingLogo ::create (17);
-	//newLogo .anim_type () .to_number ();
-	print! ("test_number:  {}\n", newLogo .retrieve_number ());
+	let newLogo = LoadingLogo ::create (Some (11));
 	return newLogo .into ();
 }
 
@@ -178,8 +175,7 @@ mod logo_impl
 	pub struct LoadingLogo
 	{
 		# [property (get, set)]
-		test_number: std ::cell ::Cell<i32>,
-		anim_type: std ::cell ::Cell <LogoType>,
+		anim_type: std ::cell ::Cell<i32>,
 		iter: std ::cell ::Cell <f64>,
 	}
 
@@ -217,7 +213,8 @@ mod logo_impl
 
 				//  Perform the draw.
 				let anim_type = widget .anim_type .get ();
-				anim_type .draw (cairo, widget .iter .get (), areaScale);
+				let anim_type = LogoType :: default;
+				anim_type () .draw (cairo, widget .iter .get (), areaScale);
 				//  Iterate the iterator.
 				widget .iter .set (widget .iter .get () + 1.0);
 
