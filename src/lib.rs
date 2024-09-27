@@ -62,6 +62,7 @@ use gtk ::glib ::clone;
 //  of Which are Local
 mod logo_types;
 use crate ::logo_types ::LogoType;
+use crate ::logo_types ::LtType;
 
 //  Global Enumerations
 
@@ -99,7 +100,7 @@ glib ::wrapper!
 //  Implement the public-facing API for this structure.
 impl LoadingLogo
 {
-	pub fn create (anim_type: Option <i32>) -> Self
+	pub fn create (anim_type: Option <LtType>) -> Self
 	{
 		let anim_type = match (anim_type)
 		{
@@ -142,7 +143,7 @@ pub extern "C" fn sp_gtk4_loading_logos_create_default () -> gtk ::Widget
 	return sp_gtk4_loading_logos_create (LogoType ::default_value ());
 }
 # [no_mangle]
-pub extern "C" fn sp_gtk4_loading_logos_create (anim_type: i32) -> gtk ::Widget
+pub extern "C" fn sp_gtk4_loading_logos_create (anim_type: LtType) -> gtk ::Widget
 {
 	gtk ::init () .unwrap ();
 
@@ -150,18 +151,23 @@ pub extern "C" fn sp_gtk4_loading_logos_create (anim_type: i32) -> gtk ::Widget
 	return newLogo .into ();
 }
 # [no_mangle]
-pub extern "C" fn sp_gtk4_loading_logos_get_type (logo: LoadingLogo) -> i32
+pub extern "C" fn sp_gtk4_loading_logos_get_type (logo: LoadingLogo) -> LtType
 {
 	//  Prevent dropping 'logo' at the end of the function.
 	let logo = Box ::leak (Box ::new (logo));
 	return logo .anim_type ();
 }
 # [no_mangle]
-pub extern "C" fn sp_gtk4_loading_logos_set_type (logo: LoadingLogo, anim_type: i32)
+pub extern "C" fn sp_gtk4_loading_logos_set_type (logo: LoadingLogo, anim_type: LtType)
 {
 	//  Prevent dropping 'logo' at the end of the function.
 	let logo = Box ::leak (Box ::new (logo));
 	logo .set_anim_type (anim_type);
+}
+# [no_mangle]
+pub extern "C" fn sp_gtk4_loading_logos_max_type () -> LtType
+{
+	return LogoType ::max_value ();
 }
 
 //  *--</Main Code>--*  //
@@ -183,6 +189,7 @@ mod logo_impl
 	use gtk ::subclass ::prelude ::*;
 
 	use crate ::logo_types ::LogoType;
+	use crate ::logo_types ::LtType;
 
 	const DRAW_TARGET_LEN: f64 = 1000.0;
 	const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
@@ -192,7 +199,7 @@ mod logo_impl
 	pub struct LoadingLogo
 	{
 		# [property (get, set)]
-		anim_type: std ::cell ::Cell<i32>,
+		anim_type: std ::cell ::Cell<LtType>,
 		iter: std ::cell ::Cell <f64>,
 	}
 

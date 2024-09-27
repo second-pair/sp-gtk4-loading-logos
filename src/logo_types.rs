@@ -44,6 +44,7 @@ use gtk4 as gtk;
 //use gtk ::prelude ::*;
 //use gtk ::glib;
 //use gtk ::glib ::clone;
+use enum_ordinalize ::*;
 //  of Which are Local
 
 //  Global Enumerations
@@ -57,13 +58,14 @@ use gtk4 as gtk;
 6.  N-start circumference-following arcs.
 7.  Concentric reverse-direction circumference-following circles.
 8.  Concentric reverse-direction circumference-following circles V2.
-9.  Concentric reverse-direction circumference-following circles, multi-speed.
+9.  Concentric reverse-direction circumference-following circles, muType-speed.
 10.  Orbiting N-Ary balls, with radius lines.
 11.  Orbiting N-Ary balls, with radius-following pulsers.
 */
+pub type LtType = i8;
+# [repr (i8)]
 # [allow (non_camel_case_types)]
-# [allow (dead_code)]
-# [derive (Default, Clone, Copy)]
+# [derive (Default, Clone, Copy, Ordinalize)]
 pub enum LogoType
 {
 	PulseFillCircle,
@@ -148,44 +150,15 @@ impl std ::fmt ::Debug for Error
 
 impl LogoType
 {
-	pub fn to_value (self) -> i32
+	pub fn to_value (self) -> LtType
 	{
-		return match self
-		{
-			LogoType ::PulseFillCircle => 0,
-			LogoType ::CircFillCircleCcw => 1,
-			LogoType ::CircFillCircleCw => 2,
-			LogoType ::OrbitNBalls => 3,
-			LogoType ::CircFillCircle_OrbitNBalls => 4,
-			LogoType ::NStartCircArcs => 5,
-			LogoType ::ConcentricCircArcsV1 => 6,
-			LogoType ::ConcentricCircArcsV2 => 7,
-			LogoType ::ConcentricCircArcsV3 => 8,
-			LogoType ::OrbitNBalls_RadLines => 9,
-			LogoType ::OrbitNBalls_PulseRadLines => 10,
-			LogoType ::Pong => 11,
-		}
+		return self .ordinal ();
 	}
-	pub fn from_value (value: i32) -> Option <LogoType>
+	pub fn from_value (value: LtType) -> Option <LogoType>
 	{
-		return match value
-		{
-			x if x == 0 => Some (LogoType ::PulseFillCircle),
-			x if x == 1 => Some (LogoType ::CircFillCircleCcw),
-			x if x == 2 => Some (LogoType ::CircFillCircleCw),
-			x if x == 3 => Some (LogoType ::OrbitNBalls),
-			x if x == 4 => Some (LogoType ::CircFillCircle_OrbitNBalls),
-			x if x == 5 => Some (LogoType ::NStartCircArcs),
-			x if x == 6 => Some (LogoType ::ConcentricCircArcsV1),
-			x if x == 7 => Some (LogoType ::ConcentricCircArcsV2),
-			x if x == 8 => Some (LogoType ::ConcentricCircArcsV3),
-			x if x == 9 => Some (LogoType ::OrbitNBalls_RadLines),
-			x if x == 10 => Some (LogoType ::OrbitNBalls_PulseRadLines),
-			x if x == 11 => Some (LogoType ::Pong),
-			_ => None,
-		}
+		return LogoType ::from_ordinal (value);
 	}
-	pub fn from_value_or_default (value: i32) -> LogoType
+	pub fn from_value_or_default (value: LtType) -> LogoType
 	{
 		return match LogoType ::from_value (value)
 		{
@@ -193,9 +166,13 @@ impl LogoType
 			None => LogoType ::default (),
 		};
 	}
-	pub fn default_value () -> i32
+	pub fn default_value () -> LtType
 	{
 		return LogoType ::default () .to_value ();
+	}
+	pub fn max_value () -> LtType
+	{
+		return (LogoType ::VARIANTS .len () - 1) as LtType;
 	}
 	//  Cairo Render function.
 	//Work out how to break these down into smaller fucntions or something.  Does Rust have private impl functions?

@@ -18,5 +18,6 @@ codegen-units = 1
 
 
 [dependencies]
+enum-ordinalize = "4.3.0"
 gtk4 = "0.9.1"
 libc = "0.2.158"
