@@ -228,16 +228,20 @@ mod logo_impl
 			DrawingAreaExtManual ::set_draw_func (self .obj () .as_ref (),
 				clone! (@weak self as widget => move |_, cairo, width, height|
 			{
+				let wF64 = width as f64;
+				let hF64 = height as f64;
+				let areaLen = core ::cmp ::min (width, height) as f64;
+
 				//  Scale dimension (in pixels) - calculated from 'width' and 'height'.  We'll shrink this a bit further shortly.
-				let areaScale = core ::cmp ::min (width, height) as f64 * DRAW_TARGET_LEN;
-				let borderLen = core ::cmp ::min (width, height) as f64 / 2.0;
+				let areaScale = areaLen * DRAW_TARGET_LEN;
+				let borderLen = areaLen / 2.0;
 				let borderRad = areaScale * DRAW_RAD_BASE;
 
 				//  Move the origin to the middle and flip the Y-axis.
-				let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, width as f64 / 2.0, height as f64 / 2.0);
+				let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, wF64 / 2.0, hF64 / 2.0);
 				cairo .transform (matrix);
 
-				//  Draw a box outline to help suss out the widget's area.
+				//  Draw a rounded rectangle to bound the logo.
 				cairo .move_to (-borderLen, borderLen - borderRad);
 				cairo .line_to (-borderLen, -borderLen + borderRad);
 				cairo .arc (-borderLen + borderRad, -borderLen + borderRad, borderRad, PI, PI*1.5);
@@ -247,8 +251,9 @@ mod logo_impl
 				cairo .arc (borderLen - borderRad, borderLen - borderRad, borderRad, 0.0, PI*0.5);
 				cairo .line_to (-borderLen + borderRad, borderLen);
 				cairo .arc (-borderLen + borderRad, borderLen - borderRad, borderRad, PI*0.5, PI);
-
-				cairo .set_source_rgba (0.0, 0.0, 0.0, 0.7);
+				//  My 'grey1' colour:  https://site.second-pair.uk/css/colours-dusk.css
+				//  1E (0.1176470588235294) 21 (0.1294117647058824) 2B (0.1686274509803922)
+				cairo .set_source_rgba (0.1176470588235294, 0.1294117647058824, 0.1686274509803922, 1.0);
 				cairo .fill () .unwrap ();
 
 
