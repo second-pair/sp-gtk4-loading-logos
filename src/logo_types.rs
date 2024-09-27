@@ -79,8 +79,8 @@ pub enum LogoType
 	ConcentricCircArcsV1,
 	ConcentricCircArcsV2,
 	ConcentricCircArcsV3,
-	OrbitNBalls_RadLines,
-	OrbitNBalls_PulseRadLines,
+	OrbitNBalls_SparkLines,
+	OrbitNBalls_PulseSparkLines,
 	Pong,
 }
 
@@ -191,8 +191,8 @@ impl LogoType
 			LogoType ::ConcentricCircArcsV1 => self .draw_ConcentricCircArcsV1 (cairo, iter, areaScale),
 			LogoType ::ConcentricCircArcsV2 => self .draw_ConcentricCircArcsV2 (cairo, iter, areaScale),
 			LogoType ::ConcentricCircArcsV3 => self .draw_ConcentricCircArcsV3 (cairo, iter, areaScale),
-			LogoType ::OrbitNBalls_RadLines => self .draw_OrbitNBalls_RadLines (cairo, iter, areaScale),
-			LogoType ::OrbitNBalls_PulseRadLines => self .draw_OrbitNBalls_PulseRadLines (cairo, iter, areaScale),
+			LogoType ::OrbitNBalls_SparkLines => self .draw_OrbitNBalls_SparkLines (cairo, iter, areaScale),
+			LogoType ::OrbitNBalls_PulseSparkLines => self .draw_OrbitNBalls_PulseSparkLines (cairo, iter, areaScale),
 			LogoType ::Pong => self .draw_Pong (cairo, iter, areaScale),
 		}
 	}
@@ -217,6 +217,33 @@ impl LogoType
 				true => cairo .arc (0.0, 0.0, radius, PI*0.5, PI*0.5 + angle),
 				false => cairo .arc_negative (0.0, 0.0, radius, PI*0.5, -PI*1.5 + angle),
 			};
+		}
+	}
+	fn calc_OrbitNBalls (self, cairo: &Context, radOrbit: f64, radBall: f64, count: usize, angle: f64, cw: bool)
+	{
+		//  Step through each ball and draw each evenly interspersed.
+		for ball in 0..count
+		{
+			let angleCurr = match cw
+			{
+				true => angle + PI*2.0 * ball as f64 / count as f64,
+				false => PI * 2.0 - (angle + PI*2.0 * ball as f64 / count as f64),
+			};
+			cairo .move_to (radBall + radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin ());
+			cairo .arc (radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin (), radBall, 0.0, PI*2.0);
+		}
+	}
+	fn calc_SparkLines (self, cairo: &Context, radS: f64, radE: f64, count: usize, angle: f64, cw: bool)
+	{
+		for spark in 0..count
+		{
+			let angleCurr = match cw
+			{
+				true => angle + PI*2.0 * spark as f64 / count as f64,
+				false => PI * 2.0 - (angle + PI*2.0 * spark as f64 / count as f64),
+			};
+			cairo .move_to (radS * angleCurr .cos (), radS * angleCurr .sin ());
+			cairo .line_to (radE * angleCurr .cos (), radE * angleCurr .sin ());
 		}
 	}
 
@@ -253,19 +280,13 @@ impl LogoType
 	fn draw_OrbitNBalls (self, cairo: &Context, iter: f64, areaScale: f64)
 	{
 		//  Calculate the overall orbit radius & the radii of the smaller balls.
-		let radCircle = areaScale / 10.0;
-		let radOrbit = areaScale / 2.0 - radCircle;
-		let countCircle = 3;
+		let radBall = areaScale / 10.0;
+		let radOrbit = areaScale / 2.0 - radBall;
+		let countBall = 3;
 		let iterCap = 120.0;
 		//  Determine the base angular offset.
 		let angleBase = PI * 2.0 * (iter % iterCap) / -iterCap;
-		//  Step through each ball and draw each evenly interspersed.
-		for circle in 0..countCircle
-		{
-			let angleCurr = angleBase + PI*2.0 * circle as f64 / countCircle as f64;
-			cairo .move_to (radCircle + radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin ());
-			cairo .arc (radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin (), radCircle, 0.0, PI * 2.0);
-		}
+		self .calc_OrbitNBalls (cairo, radOrbit, radBall, countBall, angleBase, true);
 	}
 	fn draw_CircFillCircle_OrbitNBalls (self, cairo: &Context, iter: f64, areaScale: f64)
 	{
@@ -277,19 +298,13 @@ impl LogoType
 		self .calc_CircFillCircle (cairo, radOuter, angleCurr, true);
 
 		//  Calculate the overall orbit radius & the radii of the smaller balls.
-		let radCircle = areaScale / 18.0;
-		let radOrbit = radOuter * 0.55 - radCircle;
-		let countCircle = 3;
+		let radBall = areaScale / 18.0;
+		let radOrbit = radOuter * 0.55 - radBall;
+		let countBall = 3;
 		let iterCap = 142.7;
 		//  Determine the base angular offset.
 		let angleBase = PI * 2.0 * (iter % iterCap) / -iterCap;
-		//  Step through each ball and draw each evenly interspersed.
-		for circle in 0..countCircle
-		{
-			let angleCurr = angleBase + PI*2.0 * circle as f64 / countCircle as f64;
-			cairo .move_to (radCircle + radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin ());
-			cairo .arc (radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin (), radCircle, 0.0, PI * 2.0);
-		}
+		self .calc_OrbitNBalls (cairo, radOrbit, radBall, countBall, angleBase, true);
 	}
 	fn draw_NStartCircArcs (self, cairo: &Context, iter: f64, areaScale: f64)
 	{
@@ -360,56 +375,60 @@ impl LogoType
 			self .calc_CircFillCircle (cairo, radCurr, angleCurr, cw);
 		}
 	}
-	fn draw_OrbitNBalls_RadLines (self, cairo: &Context, iter: f64, areaScale: f64)
+	fn draw_OrbitNBalls_SparkLines (self, cairo: &Context, iter: f64, areaScale: f64)
 	{
-		let radCircle = 20.0;
-		let radOrbit = 200.0;
-		let sparkStart = 30.0;
-		let sparkGap = 40.0;
-		let countCircle = 3;
+		//  Calculate the overall orbit radius & the radii of the smaller balls.
+		let radBall = areaScale / 18.0;
+		let radOrbit = areaScale / 2.0 - radBall;
+		let sepFactorS = 1.6;
+		let sepFactorE = 2.8;
+		let count = 3;
+		let cw = false;
+		let iterCap = 60.0;
+		//  Determine the base angular offset.
+		let angleBase = PI * 2.0 * (iter % iterCap) / -iterCap;
+		self .calc_OrbitNBalls (cairo, radOrbit, radBall, count, angleBase, cw);
 
-		for circle in 0..countCircle
-		{
-			let iterStart = (iter * 0.1 + PI * 2.0 * circle as f64 / countCircle as f64) % (PI * 2.0);
-			//  Spark Line
-			cairo .move_to (sparkStart * iterStart .cos (), sparkStart * iterStart .sin ());
-			cairo .line_to ((radOrbit - radCircle / 2.0 - sparkGap) * iterStart .cos (), (radOrbit - radCircle / 2.0 - sparkGap) * iterStart .sin ());
-			//  Circle
-			cairo .move_to (radCircle + radOrbit * iterStart .cos (), radOrbit * iterStart .sin ());
-			cairo .arc (radOrbit * iterStart .cos (), radOrbit * iterStart .sin (), radCircle, 0.0, PI * 2.0);
-		}
+		//  Calculate positions for the sparklines.
+		let radStart = radBall * sepFactorS;
+		let radEnd = radOrbit - radBall * sepFactorE;
+		self .calc_SparkLines (cairo, radStart, radEnd, count, angleBase, cw);
 	}
-	fn draw_OrbitNBalls_PulseRadLines (self, cairo: &Context, iter: f64, areaScale: f64)
+	fn draw_OrbitNBalls_PulseSparkLines (self, cairo: &Context, iter: f64, areaScale: f64)
 	{
-		let radCircle = 20.0;
-		let radOrbit = 200.0;
-		let sparkStart = 30.0;
-		let sparkGap = 40.0;
-		let sparkStop = (radOrbit - radCircle / 2.0 - sparkGap);
-		let countCircle = 3;
-		let iterSpark = (iter * 8.0) % ((sparkStop - sparkStart) * 2.0);
+		//  Calculate the overall orbit radius & the radii of the smaller balls.
+		let radBall = areaScale / 18.0;
+		let radOrbit = areaScale / 2.0 - radBall;
+		let sepFactorS = 1.6;
+		let sepFactorE = 2.8;
+		let count = 3;
+		let cw = false;
+		let iterCapBalls = 60.0;
+		//  Determine the base angular offset.
+		let angleBase = PI * 2.0 * (iter % iterCapBalls) / -iterCapBalls;
+		self .calc_OrbitNBalls (cairo, radOrbit, radBall, count, angleBase, cw);
 
-		for circle in 0..countCircle
+		//  Calculate the extents of the sparklines.
+		let radStart = radBall * sepFactorS;
+		let radLen = radOrbit - radBall * sepFactorE - radStart;
+		//  Calculate an iterator-length value.
+		let iterCapSparks = 40.0;
+		let lenIter = radLen * (iter % iterCapSparks) / iterCapSparks * 2.0;
+		//  Determine the actual start & end based off this.
+		match (lenIter)
 		{
-			let iterStart = (iter * 0.1 + PI * 2.0 * circle as f64 / countCircle as f64) % (PI * 2.0);
-			//  Spark Line
-			match (iterSpark <= sparkStop - sparkStart)
+			x if x > radLen =>
 			{
-				true =>
-				{
-					cairo .move_to (sparkStart * iterStart .cos (), sparkStart * iterStart .sin ());
-					cairo .line_to ((sparkStart + iterSpark) * iterStart .cos (), (sparkStart + iterSpark) * iterStart .sin ());
-				},
-				false =>
-				{
-					let iterSpark = iterSpark % (sparkStop - sparkStart);
-					cairo .move_to ((sparkStart + iterSpark) * iterStart .cos (), (sparkStart + iterSpark) * iterStart .sin ());
-					cairo .line_to (sparkStop * iterStart .cos (), sparkStop * iterStart .sin ());
-				},
-			};
-			//  Circle
-			cairo .move_to (radCircle + radOrbit * iterStart .cos (), radOrbit * iterStart .sin ());
-			cairo .arc (radOrbit * iterStart .cos (), radOrbit * iterStart .sin (), radCircle, 0.0, PI * 2.0);
+				let radCurrS = radStart + (lenIter - radLen);
+				let radCurrE = radStart + radLen;
+				self .calc_SparkLines (cairo, radCurrS, radCurrE, count, angleBase, cw);
+			},
+			x =>
+			{
+				let radCurrS = radStart;
+				let radCurrE = radStart + lenIter;
+				self .calc_SparkLines (cairo, radCurrS, radCurrE, count, angleBase, cw);
+			},
 		}
 	}
 
