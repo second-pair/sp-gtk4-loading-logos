@@ -102,7 +102,7 @@ impl LoadingLogo
 	pub fn create (test_number: i32) -> Self
 	{
 		let da_logo: LoadingLogo = Object ::builder ()
-			//.property ("test_number", test_number)
+			.property ("test_number", test_number)
 			.build ();
 		da_logo .set_hexpand (true);
 		da_logo .set_vexpand (true);
@@ -191,6 +191,7 @@ mod logo_impl
 		type ParentType = gtk ::DrawingArea;
 	}
 	//  Trait shared by all GObjects
+	# [glib::derived_properties]
 	impl ObjectImpl for LoadingLogo
 	{
 		fn constructed (&self)
