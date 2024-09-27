@@ -78,7 +78,7 @@ pub enum LogoType
 	ConcentricCircArcsV3,
 	OrbitNBalls_RadLines,
 	OrbitNBalls_PulseRadLines,
-	Pong
+	Pong,
 }
 
 //  Global Constants
@@ -148,6 +148,55 @@ impl std ::fmt ::Debug for Error
 
 impl LogoType
 {
+	pub fn to_value (self) -> i32
+	{
+		return match self
+		{
+			LogoType ::PulseFillCircle => 0,
+			LogoType ::CircFillCircleCcw => 1,
+			LogoType ::CircFillCircleCw => 2,
+			LogoType ::OrbitNBalls => 3,
+			LogoType ::CircFillCircle_OrbitNBalls => 4,
+			LogoType ::NStartCircArcs => 5,
+			LogoType ::ConcentricCircArcsV1 => 6,
+			LogoType ::ConcentricCircArcsV2 => 7,
+			LogoType ::ConcentricCircArcsV3 => 8,
+			LogoType ::OrbitNBalls_RadLines => 9,
+			LogoType ::OrbitNBalls_PulseRadLines => 10,
+			LogoType ::Pong => 11,
+		}
+	}
+	pub fn from_value (value: i32) -> Option <LogoType>
+	{
+		return match value
+		{
+			x if x == 0 => Some (LogoType ::PulseFillCircle),
+			x if x == 1 => Some (LogoType ::CircFillCircleCcw),
+			x if x == 2 => Some (LogoType ::CircFillCircleCw),
+			x if x == 3 => Some (LogoType ::OrbitNBalls),
+			x if x == 4 => Some (LogoType ::CircFillCircle_OrbitNBalls),
+			x if x == 5 => Some (LogoType ::NStartCircArcs),
+			x if x == 6 => Some (LogoType ::ConcentricCircArcsV1),
+			x if x == 7 => Some (LogoType ::ConcentricCircArcsV2),
+			x if x == 8 => Some (LogoType ::ConcentricCircArcsV3),
+			x if x == 9 => Some (LogoType ::OrbitNBalls_RadLines),
+			x if x == 10 => Some (LogoType ::OrbitNBalls_PulseRadLines),
+			x if x == 11 => Some (LogoType ::Pong),
+			_ => None,
+		}
+	}
+	pub fn from_value_or_default (value: i32) -> LogoType
+	{
+		return match LogoType ::from_value (value)
+		{
+			Some (logo) => logo,
+			None => LogoType ::default (),
+		};
+	}
+	pub fn default_value () -> i32
+	{
+		return LogoType ::default () .to_value ();
+	}
 	//  Cairo Render function.
 	//Work out how to break these down into smaller fucntions or something.  Does Rust have private impl functions?
 	pub fn draw (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)

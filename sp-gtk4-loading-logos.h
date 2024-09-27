@@ -28,7 +28,8 @@
 //  Truly Global Variables
 
 //  Global Prototype Functions
-GtkWidget* sp_gtk4_loading_logos_create ();
+GtkWidget* sp_gtk4_loading_logos_create_default ();
+GtkWidget* sp_gtk4_loading_logos_create (int32_t anim_type);
 //set type
 //get type
 

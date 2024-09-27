@@ -103,13 +103,11 @@ impl LoadingLogo
 	{
 		let anim_type = match (anim_type)
 		{
-			Some (val) => val,
-			None => 5,
+			None => LogoType ::default_value (),
+			Some (val) => LogoType ::from_value_or_default (val) .to_value (),
 		};
 		let da_logo: LoadingLogo = Object ::builder ()
 			.property ("anim_type", anim_type)
-			//.property ("anim_type", std ::cell ::Cell ::new (LogoType ::default))
-			//.property ("anim_type", LogoType ::default)
 			.build ();
 		da_logo .set_hexpand (true);
 		da_logo .set_vexpand (true);
@@ -127,6 +125,8 @@ impl LoadingLogo
 			}
 		));
 
+		print! ("anim_type:  {}\n", da_logo .anim_type ());
+
 		return da_logo;
 	}
 }
@@ -139,11 +139,16 @@ impl LoadingLogo
 
 //  C API.
 # [no_mangle]
-pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
+pub unsafe extern "C" fn sp_gtk4_loading_logos_create_default () -> gtk ::Widget
+{
+	return sp_gtk4_loading_logos_create (LogoType ::default_value ());
+}
+# [no_mangle]
+pub unsafe extern "C" fn sp_gtk4_loading_logos_create (anim_type: i32) -> gtk ::Widget
 {
 	gtk ::init () .unwrap ();
 
-	let newLogo = LoadingLogo ::create (Some (11));
+	let newLogo = LoadingLogo ::create (Some (anim_type));
 	return newLogo .into ();
 }
 
@@ -212,9 +217,8 @@ mod logo_impl
 				cairo .transform (matrix);
 
 				//  Perform the draw.
-				let anim_type = widget .anim_type .get ();
-				let anim_type = LogoType :: default;
-				anim_type () .draw (cairo, widget .iter .get (), areaScale);
+				let anim_type = LogoType ::from_value_or_default (widget .anim_type .get ());
+				anim_type .draw (cairo, widget .iter .get (), areaScale);
 				//  Iterate the iterator.
 				widget .iter .set (widget .iter .get () + 1.0);
 
