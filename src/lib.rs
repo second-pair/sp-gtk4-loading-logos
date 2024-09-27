@@ -61,6 +61,7 @@ use gtk ::glib ::ControlFlow;
 use gtk ::glib ::clone;
 //  of Which are Local
 mod logo_types;
+use crate ::logo_types ::LogoType;
 
 //  Global Enumerations
 
@@ -87,23 +88,25 @@ const TIME_ANIM: u16 = 50;
 
 //  *--<Traits & Implementations>--*  //
 
+//  Create the public-facing structure and apply the 'glib' wrapper to encase it as a GObject.
 glib ::wrapper!
 {
-	pub struct LoadingLogo (ObjectSubclass <loading_logos_impl ::LoadingLogo>)
+	pub struct LoadingLogo (ObjectSubclass <logo_impl ::LoadingLogo>)
 	@extends gtk ::DrawingArea, gtk ::Widget,
 	@implements gtk ::Accessible, gtk ::Actionable, gtk ::Buildable, gtk::ConstraintTarget;
 }
 
+//  Implement the public-facing API for this structure.
 impl LoadingLogo
 {
-	pub fn create () -> Self
+	pub fn create (test_number: i32) -> Self
 	{
-		let da_logo: LoadingLogo = Object ::builder () .build ();
+		let da_logo: LoadingLogo = Object ::builder ()
+			//.property ("test_number", test_number)
+			.build ();
 		da_logo .set_hexpand (true);
 		da_logo .set_vexpand (true);
-
-		//  Configure the redraw.
-		da_logo .setup_render ();
+		//da_logo .test_number = 14;
 
 		//  Add a timeout to update the logo's positions.
 		//  Local, so we don't mess with GTK's main-thread requirements.
@@ -121,9 +124,10 @@ impl LoadingLogo
 		return da_logo;
 	}
 
-	fn setup_render (&self)
+	pub fn retrieve_number (&self) -> i32
 	{
-
+		//return self .test_number ();
+		return 7;
 	}
 }
 
@@ -133,13 +137,17 @@ impl LoadingLogo
 
 //  *--<Main Code>--*  //
 
+//  C API.
 # [no_mangle]
 pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
 {
 	gtk ::init () .unwrap ();
 
 	//return priv_create ();
-	return LoadingLogo ::create () .into ();
+	let newLogo = LoadingLogo ::create (17);
+	//newLogo .anim_type () .to_number ();
+	print! ("test_number:  {}\n", newLogo .retrieve_number ());
+	return newLogo .into ();
 }
 
 //  *--</Main Code>--*  //
@@ -151,12 +159,13 @@ pub unsafe extern "C" fn sp_gtk4_loading_logos_create () -> gtk ::Widget
 //  *--</Callbacks>--*  //
 
 
-mod loading_logos_impl
+mod logo_impl
 {
 	use gtk4 as gtk;
 	use gtk ::prelude ::*;
 	use gtk ::glib;
 	use gtk ::glib ::clone;
+	use gtk ::glib ::Properties;
 	use gtk ::subclass ::prelude ::*;
 
 	use crate ::logo_types ::LogoType;
@@ -164,9 +173,12 @@ mod loading_logos_impl
 	const DRAW_TARGET_LEN: f64 = 1000.0;
 	const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
 
-	# [derive (Default)]
+	# [derive (Properties, Default)]
+	# [properties (wrapper_type = super ::LoadingLogo)]
 	pub struct LoadingLogo
 	{
+		# [property (get, set)]
+		test_number: std ::cell ::Cell<i32>,
 		anim_type: std ::cell ::Cell <LogoType>,
 		iter: std ::cell ::Cell <f64>,
 	}
@@ -184,9 +196,13 @@ mod loading_logos_impl
 		fn constructed (&self)
 		{
 			self .parent_constructed ();
+
+			//
+
+			//  Set up the draw function.
 			# [allow (deprecated)]
 			DrawingAreaExtManual ::set_draw_func (self .obj () .as_ref (),
-				clone!(@weak self as widget => move |_, cairo, width, height|
+				clone! (@weak self as widget => move |_, cairo, width, height|
 			{
 				//  Draw a box outline to help suss out the widget's area.
 				cairo .rectangle (0.0, 0.0, width as f64, height as f64);

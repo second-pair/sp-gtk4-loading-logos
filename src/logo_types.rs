@@ -7,6 +7,8 @@
  -=-  Part Of  -=-
  sp-gtk4-loading-logos.git
 
+ This is mostly here to abstract this mass of code off to a different file.  Depending on what we do later, this may well get merged with 'lib.rs'.
+
 //  *--</Preface>--*  */
 
 
