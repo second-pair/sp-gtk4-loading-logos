@@ -125,8 +125,6 @@ impl LoadingLogo
 			}
 		));
 
-		print! ("anim_type:  {}\n", da_logo .anim_type ());
-
 		return da_logo;
 	}
 }
@@ -139,17 +137,31 @@ impl LoadingLogo
 
 //  C API.
 # [no_mangle]
-pub unsafe extern "C" fn sp_gtk4_loading_logos_create_default () -> gtk ::Widget
+pub extern "C" fn sp_gtk4_loading_logos_create_default () -> gtk ::Widget
 {
 	return sp_gtk4_loading_logos_create (LogoType ::default_value ());
 }
 # [no_mangle]
-pub unsafe extern "C" fn sp_gtk4_loading_logos_create (anim_type: i32) -> gtk ::Widget
+pub extern "C" fn sp_gtk4_loading_logos_create (anim_type: i32) -> gtk ::Widget
 {
 	gtk ::init () .unwrap ();
 
 	let newLogo = LoadingLogo ::create (Some (anim_type));
 	return newLogo .into ();
+}
+# [no_mangle]
+pub extern "C" fn sp_gtk4_loading_logos_get_type (logo: LoadingLogo) -> i32
+{
+	//  Prevent dropping 'logo' at the end of the function.
+	let logo = Box ::leak (Box ::new (logo));
+	return logo .anim_type ();
+}
+# [no_mangle]
+pub extern "C" fn sp_gtk4_loading_logos_set_type (logo: LoadingLogo, anim_type: i32)
+{
+	//  Prevent dropping 'logo' at the end of the function.
+	let logo = Box ::leak (Box ::new (logo));
+	logo .set_anim_type (anim_type);
 }
 
 //  *--</Main Code>--*  //

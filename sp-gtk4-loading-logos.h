@@ -30,8 +30,8 @@
 //  Global Prototype Functions
 GtkWidget* sp_gtk4_loading_logos_create_default ();
 GtkWidget* sp_gtk4_loading_logos_create (int32_t anim_type);
-//set type
-//get type
+void sp_gtk4_loading_logos_set_type (GtkWidget* logo, int32_t anim_type);
+int32_t sp_gtk4_loading_logos_get_type (GtkWidget* logo);
 
 //  *--</Definitions>--*  //
 
