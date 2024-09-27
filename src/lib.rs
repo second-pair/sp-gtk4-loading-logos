@@ -191,8 +191,8 @@ mod logo_impl
 	use crate ::logo_types ::LogoType;
 	use crate ::logo_types ::LtType;
 
-	const DRAW_TARGET_LEN: f64 = 1000.0;
-	const DRAW_LINE_WIDTH_BASE: f64 = 10.0;
+	const DRAW_TARGET_LEN: f64 = 0.8;
+	const DRAW_LINE_WIDTH_BASE: f64 = 0.014;
 
 	# [derive (Properties, Default)]
 	# [properties (wrapper_type = super ::LoadingLogo)]
@@ -228,8 +228,8 @@ mod logo_impl
 				//  Draw a box outline to help suss out the widget's area.
 				cairo .rectangle (0.0, 0.0, width as f64, height as f64);
 
-				//  Scale factor - calculated from 'width' and 'height'.
-				let areaScale = core ::cmp ::min (width, height) as f64 / DRAW_TARGET_LEN;
+				//  Scale dimension (in pixels) - calculated from 'width' and 'height'.
+				let areaScale = core ::cmp ::min (width, height) as f64 * DRAW_TARGET_LEN;
 
 				//  Move the origin to the middle and flip the Y-axis.
 				let matrix = gtk ::cairo ::Matrix ::new (1.0, 0.0, 0.0, -1.0, width as f64 / 2.0, height as f64 / 2.0);

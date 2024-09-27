@@ -192,60 +192,65 @@ impl LogoType
 			LogoType ::ConcentricCircArcsV3 => self .draw_ConcentricCircArcsV3 (cairo, iter, areaScale),
 			LogoType ::OrbitNBalls_RadLines => self .draw_OrbitNBalls_RadLines (cairo, iter, areaScale),
 			LogoType ::OrbitNBalls_PulseRadLines => self .draw_OrbitNBalls_PulseRadLines (cairo, iter, areaScale),
-			LogoType ::Pong => todo! (),
+			LogoType ::Pong => self .draw_Pong (cairo, iter, areaScale),
 		}
 	}
 
 	fn draw_PulseFillCircle (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)
 	{
-		let iterScaled = iter * 3.0;
-		let radMax = 100.0 * areaScale;
-		if (iterScaled % (radMax * 2.0) <= radMax)
+		let radMax = areaScale / 2.0;
+		let iterCap = 60.0;
+		//  Translate the iterator to a circle radius.
+		let radCurr = radMax / iterCap * 2.0 * match (iter % iterCap)
 		{
-			cairo .move_to (iterScaled % (radMax * 2.0), 0.0);
-			cairo .arc (0.0, 0.0, iterScaled % (radMax * 2.0), 0.0, PI * 2.0);
-		}
-		else
-		{
-			cairo .move_to (radMax * 2.0 - iterScaled % (radMax * 2.0), 0.0);
-			cairo .arc (0.0, 0.0, radMax * 2.0 - iterScaled % (radMax * 2.0), 0.0, PI * 2.0);
-		}
+			i if i <= iterCap / 2.0 => i,
+			i => iterCap - i,
+		};
+		//  Draw the circle.
+		cairo .move_to (radCurr, 0.0);
+		cairo .arc (0.0, 0.0, radCurr, 0.0, PI * 2.0);
 	}
 	fn draw_CircFillCircleCcw (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)
 	{
-		let iterScaled = iter * 0.26 % (PI * 4.0);
-		let radMax = 100.0;
-		cairo .move_to (radMax, 0.0);
-		match (iterScaled <= PI * 2.0)
+		let radius = areaScale / 2.0;
+		let iterCap = 60.0;
+		//  Translate the iterator to a circle radius.
+		let angleCurr = PI * 4.0 * (iter % iterCap) / iterCap;
+		//  Draw the circle.
+		cairo .move_to (0.0, radius);
+		match (angleCurr < PI * 2.0)
 		{
-			true => cairo .arc (0.0, 0.0, radMax, 0.0, iterScaled),
-			false => cairo .arc_negative (0.0, 0.0, radMax, 0.0, iterScaled),
+			true => cairo .arc (0.0, 0.0, radius, PI*0.5, PI*0.5 + angleCurr),
+			false => cairo .arc_negative (0.0, 0.0, radius, PI*0.5, -PI*1.5 + angleCurr),
 		};
 	}
 	fn draw_CircFillCircleCw (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)
 	{
-		let iterScaled = iter * 0.26 % (PI * 4.0);
-		let iterRev = PI * 2.0 - iterScaled;
-		let radMax = 100.0;
-		cairo .move_to (radMax * iterRev .cos (), radMax * iterRev .sin ());
-		match (iterScaled <= PI * 2.0)
+		let radius = areaScale / 2.0;
+		let iterCap = 60.0;
+		//  Translate the iterator to a circle radius.
+		let angleCurr = PI * 4.0 * (iter % iterCap) / iterCap;
+		//  Draw the circle.
+		cairo .move_to (0.0, radius);
+		match (angleCurr < PI * 2.0)
 		{
-			true => cairo .arc (0.0, 0.0, radMax, iterRev, PI * 2.0),
-			false => cairo .arc_negative (0.0, 0.0, radMax, iterRev, PI * 2.0),
+			true => cairo .arc_negative (0.0, 0.0, radius, PI*0.5, PI*0.5 - angleCurr),
+			false => cairo .arc (0.0, 0.0, radius, PI*0.5, PI*2.5 - angleCurr),
 		};
 	}
 	fn draw_OrbitNBalls (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)
 	{
-		let radCircle = 20.0 * areaScale;
-		let radOrbit = 100.0 * areaScale;
+		let radCircle = areaScale / 10.0;
+		let radOrbit = areaScale / 2.0 - radCircle;
 		let countCircle = 3;
-		let iterScaled = iter * 0.1;
+		let iterCap = 120.0;
+		let angleBase = PI * 2.0 * (iter % iterCap) / -iterCap;
 
 		for circle in 0..countCircle
 		{
-			let iterStart = (iter * 0.1 + PI * 2.0 * circle as f64 / countCircle as f64) % (PI * 2.0);
-			cairo .move_to (radCircle + radOrbit * iterStart .cos (), radOrbit * iterStart .sin ());
-			cairo .arc (radOrbit * iterStart .cos (), radOrbit * iterStart .sin (), radCircle, 0.0, PI * 2.0);
+			let angleCurr = angleBase + PI*2.0 * circle as f64 / countCircle as f64;
+			cairo .move_to (radCircle + radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin ());
+			cairo .arc (radOrbit * angleCurr .cos (), radOrbit * angleCurr .sin (), radCircle, 0.0, PI * 2.0);
 		}
 	}
 	fn draw_CircFillCircle_OrbitNBalls (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)
@@ -425,6 +430,9 @@ impl LogoType
 			cairo .arc (radOrbit * iterStart .cos (), radOrbit * iterStart .sin (), radCircle, 0.0, PI * 2.0);
 		}
 	}
+
+	fn draw_Pong (self, cairo: &gtk ::cairo ::Context, iter: f64, areaScale: f64)
+	{ todo! () }
 }
 
 //  *--</Traits & Implementations>--*  //
