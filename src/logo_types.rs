@@ -447,16 +447,8 @@ impl LogoType
 	*/
 	fn draw_Pong (self, cairo: &Context, iter: f64, areaScale: f64)
 	{
-		//  To start with, let's define a series of points, draw a left-hand paddle and have it cycle between these.
-		let mut points: Vec <PongPoint> = vec! (
-			PongPoint {near: 200.0, off: 0.0, cycles: 60.0},
-			PongPoint {near: 170.0, off: 0.0, cycles: 70.0},
-			PongPoint {near: 350.0, off: 0.0, cycles: 120.0},
-		);
-		//cycTotal = 250.0;  //  There will be some neat way of creating an iterator out of the struct-vector and collecting them all in a one-er.
-
-		//  Alright, now let's create a nested function to handle drawing all of this.
-		fn draw_Pong (cairo: &Context, iter: f64, scale: f64, last: PongPoint, curr: PongPoint)
+		//  Nested function to handle drawing the paddles and ball, given the previous and current point data.
+		fn draw_Pong (cairo: &Context, iter: f64, scale: f64, last: &PongPoint, curr: &PongPoint)
 		{
 			let padHeight = scale * 0.1;
 			let ballRad = scale * 0.01;
@@ -481,10 +473,24 @@ impl LogoType
 			cairo .fill () .unwrap ();
 		}
 
+		//  Point data array.
+		let mut points: Vec <PongPoint> = vec! (
+			PongPoint {near: 0.26, off: 0.0, cycles: 60.0},
+			PongPoint {near: -0.3, off: -0.2, cycles: 60.0},
+			PongPoint {near: 0.4, off: 0.1, cycles: 60.0},
+			PongPoint {near: 0.17, off: 0.24, cycles: 60.0},
+			PongPoint {near: -0.35, off: -0.06, cycles: 70.0},
+			PongPoint {near: 0.0, off: 0.0, cycles: 120.0},
+		);
+		//cycTotal = 250.0;  //  There will be some neat way of creating an iterator out of the struct-vector and collecting them all in a one-er.
+
 		//  Let's get going with just one point.  We'll calculate where the Nearside paddle should be and draw a rectangular paddle there.
-		let pointLast = PongPoint {near: -0.3, off: -0.2, cycles: 60.0};
-		let pointCurr = PongPoint {near: 0.4, off: 0.1, cycles: 60.0};
-		draw_Pong (cairo, iter - 0.0, areaScale, pointLast, pointCurr);
+		let mut cycleStart = 0.0;
+		let mut index = 0;
+		draw_Pong (cairo, iter - cycleStart, areaScale, &points [index], &points [index+1]);
+		cycleStart += points [index] .cycles;
+		index += 1;
+		draw_Pong (cairo, iter - cycleStart, areaScale, &points [index], &points [index+1]);
 	}
 }
 
