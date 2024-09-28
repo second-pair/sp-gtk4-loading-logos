@@ -455,30 +455,36 @@ impl LogoType
 		);
 		//cycTotal = 250.0;  //  There will be some neat way of creating an iterator out of the struct-vector and collecting them all in a one-er.
 
+		//  Alright, now let's create a nested function to handle drawing all of this.
+		fn draw_Pong (cairo: &Context, iter: f64, scale: f64, last: PongPoint, curr: PongPoint)
+		{
+			let padHeight = scale * 0.1;
+			let ballRad = scale * 0.01;
+
+			//  Near Paddle - moving from Last Off to Current Near.
+			let posNear = (last .off + (curr .near - last .off) * (iter % curr .cycles) / curr .cycles) * scale;
+			cairo .move_to (-scale/2.0, posNear - padHeight/2.0);
+			cairo .line_to (-scale/2.0, posNear + padHeight/2.0);
+
+			//  Far Paddle - moving from Last Near to Current Off.
+			let posOff = (last .near + (curr .off - last .near) * (iter % curr .cycles) / curr .cycles) * scale;
+			cairo .move_to (scale/2.0, posOff - padHeight/2.0);
+			cairo .line_to (scale/2.0, posOff + padHeight/2.0);
+
+			//  Render that line.
+			cairo .stroke () .unwrap ();
+			//  Ball - moving from Last Near to Current Near.
+			let posBallY = (last .near + (curr .near - last .near) * (iter % curr .cycles) / curr .cycles) * scale;
+			let posBallX = scale/2.0 - scale * (iter % curr .cycles) / curr .cycles;
+			cairo .move_to (posBallX+ballRad, posBallY);
+			cairo .arc (posBallX, posBallY, ballRad, 0.0, PI*2.0);
+			cairo .fill () .unwrap ();
+		}
+
 		//  Let's get going with just one point.  We'll calculate where the Nearside paddle should be and draw a rectangular paddle there.
-		let padHeight = areaScale * 0.1;
-		let ballRad = areaScale * 0.01;
 		let pointLast = PongPoint {near: -0.3, off: -0.2, cycles: 60.0};
 		let pointCurr = PongPoint {near: 0.4, off: 0.1, cycles: 60.0};
-
-		//  Near Paddle - moving from Last Off to Current Near.
-		let posNear = (pointLast .off + (pointCurr .near - pointLast .off) * (iter % pointCurr .cycles) / pointCurr .cycles) * areaScale;
-		cairo .move_to (-areaScale/2.0, posNear - padHeight/2.0);
-		cairo .line_to (-areaScale/2.0, posNear + padHeight/2.0);
-
-		//  Far Paddle - moving from Last Near to Current Off.
-		let posOff = (pointLast .near + (pointCurr .off - pointLast .near) * (iter % pointCurr .cycles) / pointCurr .cycles) * areaScale;
-		cairo .move_to (areaScale/2.0, posOff - padHeight/2.0);
-		cairo .line_to (areaScale/2.0, posOff + padHeight/2.0);
-
-		//  Render that line.
-		cairo .stroke () .unwrap ();
-		//  Ball - moving from Last Near to Current Near.
-		let posBallY = (pointLast .near + (pointCurr .near - pointLast .near) * (iter % pointCurr .cycles) / pointCurr .cycles) * areaScale;
-		let posBallX = areaScale/2.0 - areaScale * (iter % pointCurr .cycles) / pointCurr .cycles;
-		cairo .move_to (posBallX+ballRad, posBallY);
-		cairo .arc (posBallX, posBallY, ballRad, 0.0, PI*2.0);
-		cairo .fill () .unwrap ();
+		draw_Pong (cairo, iter - 0.0, areaScale, pointLast, pointCurr);
 	}
 }
 
