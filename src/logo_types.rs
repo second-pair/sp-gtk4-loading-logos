@@ -84,6 +84,13 @@ pub enum LogoType
 	Pong,
 }
 
+struct PongPoint
+{
+	near: f64,
+	off: f64,
+	cycles: f64,
+}
+
 //  Global Constants
 
 //  Global Variables
@@ -432,8 +439,47 @@ impl LogoType
 		}
 	}
 
+	/*  Pong
+	This one is going to need a bit of planning...
+	Let's create a loop that sees the ball bounce to a few positions on each side.
+	We can sequence the ball & paddles to move to these positions linearly in turn, over some number of iteration cycles.
+	It would also be neat if the offside paddle didn't just mirror the earside paddle - maybe it returns to the centre each time?
+	*/
 	fn draw_Pong (self, cairo: &Context, iter: f64, areaScale: f64)
-	{ todo! () }
+	{
+		//  To start with, let's define a series of points, draw a left-hand paddle and have it cycle between these.
+		let mut points: Vec <PongPoint> = vec! (
+			PongPoint {near: 200.0, off: 0.0, cycles: 60.0},
+			PongPoint {near: 170.0, off: 0.0, cycles: 70.0},
+			PongPoint {near: 350.0, off: 0.0, cycles: 120.0},
+		);
+		//cycTotal = 250.0;  //  There will be some neat way of creating an iterator out of the struct-vector and collecting them all in a one-er.
+
+		//  Let's get going with just one point.  We'll calculate where the Nearside paddle should be and draw a rectangular paddle there.
+		let padHeight = areaScale * 0.1;
+		let ballRad = areaScale * 0.01;
+		let pointLast = PongPoint {near: -0.3, off: -0.2, cycles: 60.0};
+		let pointCurr = PongPoint {near: 0.4, off: 0.1, cycles: 60.0};
+
+		//  Near Paddle - moving from Last Off to Current Near.
+		let posNear = (pointLast .off + (pointCurr .near - pointLast .off) * (iter % pointCurr .cycles) / pointCurr .cycles) * areaScale;
+		cairo .move_to (-areaScale/2.0, posNear - padHeight/2.0);
+		cairo .line_to (-areaScale/2.0, posNear + padHeight/2.0);
+
+		//  Far Paddle - moving from Last Near to Current Off.
+		let posOff = (pointLast .near + (pointCurr .off - pointLast .near) * (iter % pointCurr .cycles) / pointCurr .cycles) * areaScale;
+		cairo .move_to (areaScale/2.0, posOff - padHeight/2.0);
+		cairo .line_to (areaScale/2.0, posOff + padHeight/2.0);
+
+		//  Render that line.
+		cairo .stroke () .unwrap ();
+		//  Ball - moving from Last Near to Current Near.
+		let posBallY = (pointLast .near + (pointCurr .near - pointLast .near) * (iter % pointCurr .cycles) / pointCurr .cycles) * areaScale;
+		let posBallX = areaScale/2.0 - areaScale * (iter % pointCurr .cycles) / pointCurr .cycles;
+		cairo .move_to (posBallX+ballRad, posBallY);
+		cairo .arc (posBallX, posBallY, ballRad, 0.0, PI*2.0);
+		cairo .fill () .unwrap ();
+	}
 }
 
 //  *--</Traits & Implementations>--*  //

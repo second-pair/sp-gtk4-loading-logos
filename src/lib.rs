@@ -258,16 +258,17 @@ mod logo_impl
 
 
 				//  Perform the draw.
+				cairo .set_line_width (DRAW_LINE_WIDTH_BASE * areaScale);
+				cairo .set_line_cap (gtk ::cairo ::LineCap ::Round);
+				cairo .set_line_join (gtk ::cairo ::LineJoin ::Round);
+				cairo .set_source_rgba (1.0, 1.0, 1.0, 1.0);
+
 				let anim_type = LogoType ::from_value_or_default (widget .anim_type .get ());
 				anim_type .draw (cairo, widget .iter .get (), areaScale);
 				//  Iterate the iterator.
 				widget .iter .set (widget .iter .get () + 1.0);
 
 				//  Render that line.
-				cairo .set_line_width (DRAW_LINE_WIDTH_BASE * areaScale);
-				cairo .set_line_cap (gtk ::cairo ::LineCap ::Round);
-				cairo .set_line_join (gtk ::cairo ::LineJoin ::Round);
-				cairo .set_source_rgba (1.0, 1.0, 1.0, 1.0);
 				cairo .stroke () .unwrap ();
 			}));
 		}
