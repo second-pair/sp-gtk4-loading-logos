@@ -4,7 +4,7 @@
 #  First version of my Rust-Library-To-C makefile; which I'm anticipating I will want to have in my back pocket.
 #  Compilations we're targeting:
 #   -  x86_64-unknown-linux-gnu -> sp-gtk4-loading-logos.linux.a
-#   -  aarch64-unknown-linux-gnu -> sp-gtk4-loading-logos.arm.a
+#   -  aarch64-unknown-linux-gnu -> sp-gtk4-loading-logos.arm-linux.a
 #   -  x86_64-pc-windows-gnu -> sp-gtk4-loading-logos.win.a
 
 #  Project Information
@@ -29,7 +29,7 @@ TAG_REL=rel
 TAG_DBG=dbg
 TAG_LINUX=linux
 TAG_WIN=win
-TAG_ARM=arm
+TAG_ARM=arm-linux
 PFX_LINUX=x86_64-unknown-linux-gnu
 PFX_WIN=x86_64-pc-windows-gnu
 PFX_ARM=aarch64-unknown-linux-gnu
@@ -39,13 +39,13 @@ PKGCONF_ARM=PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu
 
 
 #  High-Level Targets
-all:  linux win arm
+all:  linux win arm-linux
 linux:  $(PATH_DEST)/$(LIB_NAME).$(TAG_REL).$(TAG_LINUX).a
 win:  $(PATH_DEST)/$(LIB_NAME).$(TAG_REL).$(TAG_WIN).a
-arm:  $(PATH_DEST)/$(LIB_NAME).$(TAG_REL).$(TAG_ARM).a
+arm-linux:  $(PATH_DEST)/$(LIB_NAME).$(TAG_REL).$(TAG_ARM).a
 dbg-linux:  $(PATH_DEST)/$(LIB_NAME).$(TAG_DBG).$(TAG_LINUX).a
 dbg-win:  $(PATH_DEST)/$(LIB_NAME).$(TAG_DBG).$(TAG_WIN).a
-dbg-arm:  $(PATH_DEST)/$(LIB_NAME).$(TAG_DBG).$(TAG_ARM).a
+dbg-arm-linux:  $(PATH_DEST)/$(LIB_NAME).$(TAG_DBG).$(TAG_ARM).a
 
 #  Cleanup
 clean:
@@ -94,4 +94,4 @@ $(PATH_DEST)/$(LIB_NAME).$(TAG_DBG).$(TAG_ARM).a:  $(PATH_ARM)/$(PATH_DBG)/$(PFX
 
 
 #  Remove these from implicit compilations.
-.PHONY:  clean all linux win arm dbg-linux dbg-win dbg-arm
+.PHONY:  clean all linux win arm-linux dbg-linux dbg-win dbg-arm-linux
