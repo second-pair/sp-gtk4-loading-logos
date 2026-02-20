@@ -2,6 +2,10 @@
 Nice simple library that draws loading-logos into a GTK4 widget.  This is implementing as a library the following project:
  -  https://github.com/second-pair/rust-gtk4-loading-logos
 
+###  Demo Video
+[sp-gtk4-loading-logos-demo.webm](https://github.com/user-attachments/assets/b1b267ea-103b-4940-b9de-5d86b9fa1a1d)
+
+
 ##  C Interoperability
 This library will be cross-compiled into C and provide archive files in the top-level directory.  Simply add one of these to your compilation as if it were a C-file and include 'sp-gtk4-loading-logos.h'.
 
